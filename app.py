@@ -6,11 +6,9 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# Конфигурация
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'mp4', 'avi', 'mov', 'mkv'}
 
-# Глобальная переменная для хранения прогресса
 progress = 0
 
 def allowed_file(filename):
@@ -27,17 +25,16 @@ def run_ffmpeg(input_file, output_file):
         if output == '' and process.poll() is not None:
             break
         if output:
-            # Извлечение прогресса из вывода ffmpeg
             for line in output.splitlines():
                 if "time=" in line:
                     time_str = line.split("time=")[1].split(" ")[0]
                     time_parts = time_str.split(":")
                     total_seconds = int(time_parts[0]) * 3600 + int(time_parts[1]) * 60 + float(time_parts[2])
-                    # Примерное время обработки (можно заменить на реальное время)
-                    total_duration = 60  # Замените на фактическую продолжительность видео
+                    
+                    total_duration = 60  
                     progress = int((total_seconds / total_duration) * 100)
 
-    progress = 100  # Завершение обработки
+    progress = 100  
 
 @app.route('/')
 def index():
@@ -46,7 +43,7 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload():
     global progress
-    progress = 0  # Сброс прогресса
+    progress = 0 
 
     if 'video' not in request.files:
         return redirect(url_for('index'))
@@ -56,7 +53,6 @@ def upload():
     if video_file.filename == '' or not allowed_file(video_file.filename):
         return redirect(url_for('index'))
 
-    # Создание директории, если она не существует
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
 
@@ -64,7 +60,6 @@ def upload():
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     video_file.save(video_path)
 
-    # Обработка видео в отдельном потоке
     output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.mp4')
     threading.Thread(target=run_ffmpeg, args=(video_path, output_path)).start()
 

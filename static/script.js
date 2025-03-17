@@ -1,6 +1,7 @@
 const form = document.getElementById('uploadForm');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
+const progressText = document.getElementById('progress-text'); // Добавлено
 const messageDiv = document.getElementById('message');
 const downloadLink = document.getElementById('download-link');
 
@@ -31,11 +32,12 @@ function checkProgress() {
             .then(response => response.json())
             .then(data => {
                 progressBar.style.width = data.progress + '%'; // Обновить ширину прогресс-бара
+                progressText.innerText = data.progress + '%'; // Обновить текст прогресса
                 if (data.progress >= 100) {
                     clearInterval(interval); // Остановить проверку, когда прогресс 100%
                     messageDiv.innerHTML = 'Обработка завершена!'; // Показать сообщение
                     downloadLink.style.display = 'block'; // Показать кнопку для скачивания
                 }
             });
-    }, 1000); // Проверять каждую секунду
+    }, 500); // Проверять каждые 0.5 секунды
 }
