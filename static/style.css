@@ -1,102 +1,223 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Roboto', Arial, sans-serif;
+    background: linear-gradient(135deg, #47157E, #174696);
+    color: white;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    margin: 20px 0;
+    font-size: 3em;
+    font-weight: bold;
 }
 
+/* Стили для контейнера */
 .container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-input[type="file"] {
-    display: block;
-    margin: 20px auto;
-}
-
-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
     width: 100%;
-    transition: background-color 0.3s;
+    max-width: 1200px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 25px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
+}
+
+label {
+    display: inline;
+    width: 50%;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    border: none;
+    color: white;
+}
+
+select {
+    display: inline;
+    width: 100%;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    border: 2px solid white; /* Белая рамка */
+    background-color: #4B0082; /* Черный фон */
+    color: white; /* Белый текст */
+    cursor: pointer;
+}
+
+select option {
+    background-color: #4B0082; /* Черный фон для опций */
+    color: white; /* Белый текст для опций */
+}
+button {
+    display: inline-block;
+    background: #4B0082;
+    color: white;
+    font-weight: bold;
+    padding: 12px 15px; /* Уменьшенные отступы */
+    font-size: 1.1em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%; /* Сделаем кнопки на всю ширину */
+    margin-top: 50px; /* Уменьшенный отступ */
+    text-align: center;
+    transition: all 0.3s ease;
 }
 
 button:hover {
-    background-color: #45a049;
+    background: #8000FF;
+    transform: scale(1.05);
 }
 
-#progress {
+.media-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.media-view {
+    flex: 1;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    width: 100%; /* Добавлена полная ширина */
+    max-width: 550px;
+    height: 400px; /* Фиксированная высота для блоков */
+}
+
+video, img {
     width: 100%;
-    background-color: #f3f3f3;
-    border-radius: 5px;
-    margin-top: 20px;
-    display: none; /* Скрыто по умолчанию */
+    height: 100%;
+    border: 5px solid white;
+    border-radius: 15px;
+    object-fit: cover;
 }
 
-#progress-bar {
-    width: 0%;
-    height: 30px;
-    background-color: #4caf50;
-    border-radius: 5px;
-    transition: width 0.3s;
-}
-
-#message {
+.file-upload-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 15px 20px;
     text-align: center;
-    margin-top: 20px;
-    font-size: 18px;
-    color: #333;
+    cursor: pointer;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+    transition: background 0.3s ease-in-out;
 }
 
-#download-link {
-    text-align: center;
-    margin-top: 20px;
+.file-upload-container:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.file-upload-container input {
     display: none;
 }
 
-.download-button {
-    background-color: #007BFF;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 16px;
-    transition: background-color 0.3s;
+.file-upload-container label {
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #4B0082;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.download-button:hover {
-    background-color: #0056b3;
-}
-
-#progress-bar {
-    width: 0%;
-    height: 30px;
-    background-color: #4caf50;
-    border-radius: 5px;
-    transition: width 0.3s;
-    position: relative; 
-}
-
-#progress-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
+.download-btn {
+    display: inline-block;
+    background: #47157E;
     color: white;
     font-weight: bold;
+    padding: 12px 15px;
+    font-size: 1em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 10px; /* Уменьшенный отступ */
+    width: 100%; /* Кнопка на всю ширину */
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: #8000FF;
+}
+
+.remove-btn {
+    display: inline-block;
+    background: #FF0000;
+    color: white;
+    font-weight: bold;
+    padding: 12px 15px;
+    font-size: 1em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 10px; /* Уменьшенный отступ */
+    width: 100%; /* Кнопка на всю ширину */
+    transition: all 0.3s ease;
+}
+
+.remove-btn:hover {
+    background: #FF4D4D;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Адаптивные стили */
+@media screen and (max-width: 768px) {
+    h1 {
+        font-size: 2.5em;
+    }
+
+    .media-container {
+        flex-direction: column;
+    }
+
+    .media-view {
+        flex: 1 1 100%;
+    }
+
+    video, img {
+        max-height: 300px;
+    }
+
+    button, .remove-btn, .download-btn {
+        font-size: 0.9em;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    h1 {
+        font-size: 2em;
+    }
+
+    .file-upload-container label {
+        font-size: 1em;
+    }
+
+    button, .remove-btn, .download-btn {
+        font-size: 0.8em;
+    }
+
+    video, img {
+        max-height: 250px;
+    }
 }

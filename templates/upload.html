@@ -1,26 +1,50 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Загрузка видео</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Jackal: Улучшение мультимедиа</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <h1>Anti-Jackal</h1>
     <div class="container">
-        <h1>Загрузите ваше видео</h1>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="video" accept="video/*" required>
-            <button type="submit">Загрузить</button>
-        </form>
-        <div id="progress">
-            <div id="progress-bar">
-                <span id="progress-text">0%</span>
+        <label for="enhancement_method">Какой тип файла вы хотите улучшить?</label>
+        <select id="enhancement_method" onchange="toggleInputs()">
+            <option value="Видео">Видео</option>
+            <option value="Фото">Фото</option>
+        </select>
+
+        <br/>
+
+        <label for="scale">Выберите коэффициент увеличения:</label>
+        <select id="scale">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+        </select>
+
+        <div class="media-container">
+            <div class="media-view">
+                <video id="original_video" controls class="hidden"></video>
+                <img id="original_image" class="hidden" alt="Файл до обработки">
+                <div class="file-upload-container" id="upload_container">
+                    <label for="file_input">
+                        <input type="file" id="file_input" accept="video/*,image/*" onchange="previewFile()">
+                        Загрузить файл<span>📁</span> 
+                    </label>
+                </div>
+                <button id="remove_file_btn" class="remove-btn hidden" onclick="removeFile()">Удалить файл</button>
+            </div>
+            <div class="media-view">
+                <video id="processed_video" controls class="hidden"></video>
+                <img id="processed_image" class="hidden" alt="Файл после обработки"/>
+                <a id="download_result_video" class="download-btn hidden" download>Скачать итоговое видео</a>
+                <a id="download_result_image" class="download-btn hidden" download>Скачать итоговое фото</a>
             </div>
         </div>
-        <div id="message"></div>
-        <div id="download-link">
-            <a href="{{ url_for('download', filename='output.mp4') }}" class="download-button">Скачать обработанное видео</a>
-        </div>
+
+        <button onclick="processFile()">Обработать</button>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

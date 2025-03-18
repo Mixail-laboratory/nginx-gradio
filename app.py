@@ -1,77 +1,91 @@
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory, jsonify
 import os
-import subprocess
-import threading
+import sys
+import uuid
 from werkzeug.utils import secure_filename
+from concurrent.futures import ProcessPoolExecutor
+import time
+import subprocess
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+RESULT_FOLDER = 'results'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(RESULT_FOLDER, exist_ok=True)
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['ALLOWED_EXTENSIONS'] = {'mp4', 'avi', 'mov', 'mkv'}
 
-progress = 0
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-def run_ffmpeg(input_file, output_file):
-    global progress
-    command = ['ffmpeg', '-i', input_file, '-y', output_file]
+def test_upscale(file_path, method, scale):
+    unique_id = str(uuid.uuid4())
+    name, ext = os.path.splitext(os.path.basename(file_path))
+    output_file = os.path.join(RESULT_FOLDER, f"{name}_{unique_id}{ext}")
+    print(output_file)
+    cmd = f'ffmpeg -i {file_path} -y {output_file}'
+    command = ['ffmpeg', '-i', file_path, '-y', output_file]
     
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.system(cmd)
+    return output_file if os.path.exists(output_file) else None   
 
-    while True:
-        output = process.stderr.read(1024).decode()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            for line in output.splitlines():
-                if "time=" in line:
-                    time_str = line.split("time=")[1].split(" ")[0]
-                    time_parts = time_str.split(":")
-                    total_seconds = int(time_parts[0]) * 3600 + int(time_parts[1]) * 60 + float(time_parts[2])
-                    
-                    total_duration = 60  
-                    progress = int((total_seconds / total_duration) * 100)
+def upscale(file_path, method, scale):
+    unique_id = str(uuid.uuid4())
+    name, ext = os.path.splitext(os.path.basename(file_path))
+    output_file = os.path.join(RESULT_FOLDER, f"{name}_{unique_id}{ext}")
 
-    progress = 100  
+    if not is_debug:
+        if method == "Видео":
+            cmd = f'CUDA_VISIBLE_DEVICES=0 python inference_realesrgan_video.py -i "{file_path}" -n realesr-animevideov3 -s {scale} --suffix {unique_id} --num_process_per_gpu 2'
+        else:
+            cmd = f'python inference_realesrgan.py -n RealESRGAN_x4plus -i "{file_path}" --suffix {unique_id} -s {scale}'
+
+        os.system(cmd)
+
+    if method == "Видео":
+        video_output_file = os.path.join(RESULT_FOLDER, f"{name}_{unique_id}.mp4") 
+        return video_output_file if os.path.exists(video_output_file) else None
+    else:
+        return output_file if os.path.exists(output_file) else None
 
 @app.route('/')
 def index():
     return render_template('upload.html')
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    global progress
-    progress = 0 
+@app.route('/process', methods=['POST'])
+def process_file():
+    file = request.files['file']
+    method = request.form['method']
+    scale = request.form['scale']
 
-    if 'video' not in request.files:
-        return redirect(url_for('index'))
-    
-    video_file = request.files['video']
-    
-    if video_file.filename == '' or not allowed_file(video_file.filename):
-        return redirect(url_for('index'))
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)
 
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
+    result = None
 
-    filename = secure_filename(video_file.filename)
-    video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    video_file.save(video_path)
+    # test_upscale for my test code
+    # upscale for realsrgan
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        future = executor.submit(test_upscale, file_path, method, scale)
+        #future = executor.submit(upscale, file_path, method, scale)
+        result = future.result()
 
-    output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.mp4')
-    threading.Thread(target=run_ffmpeg, args=(video_path, output_path)).start()
 
-    return render_template('upload.html', message='Видео загружается и обрабатывается!')
+    if result:
+        result_url = url_for('download_file', filename=os.path.basename(result))
+        return jsonify({
+            "status": "success",
+            "original_url": url_for('download_file', filename=filename),
+            "result_url": result_url
+        })
+    return jsonify({"status": "error", "message": "Ошибка обработки файла"}), 500
 
-@app.route('/progress', methods=['GET'])
-def get_progress():
-    return jsonify({'progress': progress})
-
-@app.route('/download/<filename>', methods=['GET'])
-def download(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+@app.route('/results/<filename>')
+def download_file(filename):
+    print(filename)
+    print(RESULT_FOLDER)
+    if filename in os.listdir(RESULT_FOLDER):
+        print('exist')
+        return send_from_directory(RESULT_FOLDER, filename, as_attachment=True)
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        is_debug = True
     app.run(debug=True)
