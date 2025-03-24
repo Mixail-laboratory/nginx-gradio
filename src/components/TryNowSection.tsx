@@ -93,6 +93,17 @@ const TryNowSection = () => {
       fileInputRef.current.value = '';
     }
   };
+
+  const handleDownload = () => {
+    if (!processedImage) return;
+
+    const link = document.createElement('a');
+    link.href = processedImage;
+    link.download = `processed_file.${fileType === 'image' ? 'png' : 'mp4'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
   
   return (
     <section id="try" className="py-20 relative bg-gradient-to-b from-ajackal-off-black to-ajackal-black">
@@ -232,7 +243,10 @@ const TryNowSection = () => {
                       />
                     )}
                     <div className="absolute bottom-4 right-4 z-20">
-                      <Button className="bg-ajackal-gradient hover:bg-ajackal-dark-gradient flex items-center gap-2">
+                      <Button
+                          className="bg-ajackal-gradient hover:bg-ajackal-dark-gradient flex items-center gap-2"
+                          onClick={handleDownload}
+                      >
                         <Download className="h-4 w-4" />
                         <span>Скачать</span>
                       </Button>
